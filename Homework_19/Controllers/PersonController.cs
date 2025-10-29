@@ -1,22 +1,25 @@
 using Homework_19.Data;
 using Homework_19.Domain;
+using Homework_19.Services;
 using Homework_19.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Homework_19.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PersonController : Controller
 {
-    private readonly PersonContext _context;
+    private readonly AppDbContext _context;
     
-    public PersonController(PersonContext context)
+    public PersonController(AppDbContext context)
     {
         _context = context;
     }
- 
+    
     [HttpPost("add/respondent")]
     [EndpointDescription("Add new respondent info to the file")]
     public IActionResult AddRespondent(Person person)
@@ -46,9 +49,9 @@ public class PersonController : Controller
         return Ok(respondents);
     }
 
-    [HttpGet("get/{id:int}")]
+    [HttpGet("get")]
     [EndpointDescription("Get respondent by id")]
-    public IActionResult GetRespondent(int id)
+    public IActionResult GetRespondent([FromQuery]int id)
     {
         var respondent = _context.Person.Where(x => x.Id == id)
             .Include(p => p.Address)
@@ -65,9 +68,10 @@ public class PersonController : Controller
         return Ok(respondents);
     }
     
-    [HttpDelete("delete/respondent/{id:int}")]
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("delete/respondent")]
     [EndpointDescription("Delete respondent by id")]
-    public IActionResult DeleteRespondent(int id)
+    public IActionResult DeleteRespondent([FromQuery]int id)
     {
         var respondent = _context.Person.Find(id);
         if (respondent == null) return NotFound("Respondent not found");
@@ -78,9 +82,10 @@ public class PersonController : Controller
         return Ok("Respondent deleted");
     }
 
-    [HttpPost("update/respondent/{id:int}")]
+    [Authorize(Roles = "Admin")]
+    [HttpPost("update/respondent")]
     [EndpointDescription("Update respondents info by id")]
-    public IActionResult UpdateRespondent(Person updatedPerson, int id)
+    public IActionResult UpdateRespondent([FromBody]Person updatedPerson, [FromQuery]int id)
     {
         var respondent = _context.Person
             .Include(p => p.Address)
