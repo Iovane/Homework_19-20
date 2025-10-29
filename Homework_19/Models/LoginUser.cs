@@ -1,4 +1,4 @@
-﻿namespace Homework_19.Data;
+﻿namespace Homework_19.Models;
 
 public class LoginUser
 {
